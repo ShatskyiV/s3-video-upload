@@ -1,0 +1,34 @@
+name: Pre-commit checks
+
+# Run on pull requests and pushes to main/add-docs branches
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'  # Adjust to match your Python version
+          cache: 'pip'  # Cache pip dependencies for faster runs
+
+      # Install project dependencies (if requirements.txt exists)
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # Run pre-commit hooks on all files
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1
