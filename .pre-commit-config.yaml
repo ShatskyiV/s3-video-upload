@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
@@ -14,12 +14,16 @@ repos:
         args: [ --fix ]
     -   id: ruff-format
 
--   repo: local
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.19.1
     hooks:
-    -   id: pytest
-        name: pytest
-        entry: pytest
-        language: system
-        types: [python]
-        pass_filenames: false
-        always_run: true
+    -   id: mypy
+        additional_dependencies: [types-requests, boto3-stubs, types-boto3]
+        args: ["--ignore-missing-imports"]
+#     -   id: pytest
+#         name: pytest
+#         entry: pytest
+#         language: system
+#         types: [python]
+#         pass_filenames: false
+#         always_run: true
