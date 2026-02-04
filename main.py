@@ -6,6 +6,7 @@ from storage.movie_storage import Movie
 from storage.stream_storage import Stream
 from storage.s3_client import S3Client
 from storage.bucket import Bucket
+
 from utils import (
     get_all_files_from_dir,
     build_metadata,
@@ -20,25 +21,21 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Upload files to S3 with optional versioning and lifecycle rules"
     )
-
     # Required arguments
     parser.add_argument(
         "--dir-path", required=True, type=Path, help="Local directory containing files"
     )
-
     parser.add_argument(
         "--file-type",
         required=True,
         choices=["movie", "stream"],
         help="File type to process",
     )
-
     parser.add_argument(
         "--bucket-name",
         required=True,
         help="Target S3 bucket name. Must have at least 3 characters. May content . and -",
     )
-
     # Optional arguments
     parser.add_argument("--prefix", default="", help="S3 key prefix")
 
@@ -57,7 +54,7 @@ def main():
     args = parse_args()
 
     if not args.dir_path.exists():
-        raise FileNotFoundError(f"Directory not found: {args.dir_path}")
+        raise FileNotFoundError(f"Directory not foud: {args.dir_path}")
 
     if args.file_type.lower() not in ["movie", "stream"]:
         raise ValueError("Unexpected file type")
@@ -68,7 +65,7 @@ def main():
     if args.lifecycle is not None and args.lifecycle <= 0:
         raise ValueError("lifecycle-days must be a positive integer")
 
-    dir_path = args.dir_path
+        dir_path = args.dir_path
     file_type = args.file_type
     bucket_name = args.bucket_name
     prefix = args.prefix
