@@ -6,9 +6,15 @@ from storage.movie_storage import Movie
 from storage.stream_storage import Stream
 from storage.s3_client import S3Client
 from storage.bucket import Bucket
-from utils import *
+from utils import (
+    get_all_files_from_dir,
+    build_metadata,
+    build_index,
+    create_and_upload_json_data_file,
+)
 
 S3_ENDPOINT_URL = "Please provide endpoint"
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -17,43 +23,31 @@ def parse_args():
 
     # Required arguments
     parser.add_argument(
-        "--dir-path",
-        required=True,
-        type=Path,
-        help="Local directory containing files"
+        "--dir-path", required=True, type=Path, help="Local directory containing files"
     )
 
     parser.add_argument(
         "--file-type",
         required=True,
         choices=["movie", "stream"],
-        help="File type to process"
+        help="File type to process",
     )
 
     parser.add_argument(
         "--bucket-name",
         required=True,
-        help="Target S3 bucket name. Must have at least 3 characters. May content . and -"
+        help="Target S3 bucket name. Must have at least 3 characters. May content . and -",
     )
 
     # Optional arguments
+    parser.add_argument("--prefix", default="", help="S3 key prefix")
+
     parser.add_argument(
-        "--prefix",
-        default="",
-        help="S3 key prefix"
+        "--versioning", action="store_true", help="Enable bucket versioning"
     )
 
     parser.add_argument(
-        "--versioning",
-        action="store_true",
-        help="Enable bucket versioning"
-    )
-
-    parser.add_argument(
-        "--lifecycle",
-        type=int,
-        metavar="DAYS",
-        help="Expire objects after N days"
+        "--lifecycle", type=int, metavar="DAYS", help="Expire objects after N days"
     )
 
     return parser.parse_args()
@@ -65,7 +59,7 @@ def main():
     if not args.dir_path.exists():
         raise FileNotFoundError(f"Directory not found: {args.dir_path}")
 
-    if args.file_type.lower() not in ['movie', 'stream']:
+    if args.file_type.lower() not in ["movie", "stream"]:
         raise ValueError("Unexpected file type")
 
     if len(args.bucket_name) < 3:
@@ -82,15 +76,17 @@ def main():
     versioning = args.versioning
     lifecycle = args.lifecycle
 
-    files=[]
+    files = []
 
-    if file_type.lower() == 'movie':
+    if file_type.lower() == "movie":
         versioning = True
         files = [Movie(movie.name, movie) for movie in get_all_files_from_dir(dir_path)]
 
-    elif file_type.lower() == 'stream':
+    elif file_type.lower() == "stream":
         versioning = False
-        files = [Stream(stream.name, stream) for stream in get_all_files_from_dir(dir_path)]
+        files = [
+            Stream(stream.name, stream) for stream in get_all_files_from_dir(dir_path)
+        ]
 
     print("S3 client connection")
     client = S3Client(endpoint_url=S3_ENDPOINT_URL)
@@ -111,12 +107,16 @@ def main():
         print(file.name)
         s3.upload_file(file.path, bucket_name, f"{prefix}{file.name}")
 
-    if file_type.lower() == 'stream':
+    if file_type.lower() == "stream":
         meta_data = build_metadata(prefix=prefix, file_count=len(files))
-        create_and_upload_json_data_file('meta', meta_data, s3, bucket_name, prefix=prefix)
+        create_and_upload_json_data_file(
+            "meta", meta_data, s3, bucket_name, prefix=prefix
+        )
 
         index_data = build_index(prefix=prefix, files=files)
-        create_and_upload_json_data_file('index', index_data, s3, bucket_name, prefix=prefix)
+        create_and_upload_json_data_file(
+            "index", index_data, s3, bucket_name, prefix=prefix
+        )
 
     client.close()
 
