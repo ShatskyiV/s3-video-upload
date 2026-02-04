@@ -17,7 +17,7 @@ class Bucket:
             response = self._client.create_bucket(Bucket=self._name)
             return response
         except ClientError as e:
-            error_code = e.response["Error"]["Code"]
+            error_code = e.response.get("Error", {}).get("Code")
 
             if error_code == "BucketAlreadyOwnedByYou":
                 self._existed = True
@@ -25,30 +25,36 @@ class Bucket:
             else:
                 raise
 
-    def set_lifecycle(self, policy_name: str, expiration_days: int,
-                      noncurrent_expiration_days: int|None = None)->None:
+    def set_lifecycle(
+        self,
+        policy_name: str,
+        expiration_days: int,
+        noncurrent_expiration_days: int | None = None,
+    ) -> None:
         lifecycle_config = {
-        "Rules": [
-            {
-                "ID": policy_name,
-                "Prefix": "",
-                "Status": "Enabled",
-                "Expiration": {"Days": expiration_days},
-                "Filter": {}
-            }
-        ]
+            "Rules": [
+                {
+                    "ID": policy_name,
+                    "Prefix": "",
+                    "Status": "Enabled",
+                    "Expiration": {"Days": expiration_days},
+                    "Filter": {},
+                }
+            ]
         }
         if noncurrent_expiration_days:
             lifecycle_config["Rules"][0]["NoncurrentVersionExpiration"] = {
-                "NoncurrentDays": noncurrent_expiration_days}
+                "NoncurrentDays": noncurrent_expiration_days
+            }
 
         self._client.put_bucket_lifecycle_configuration(
-            Bucket=self._name,
-            LifecycleConfiguration=lifecycle_config
+            Bucket=self._name, LifecycleConfiguration=lifecycle_config
         )
 
     def set_versioning(self, status):
-        assert status in ["Enabled", "Suspended"], '"{status}" is an unexpected versioning status. '
+        assert status in ["Enabled", "Suspended"], (
+            '"{status}" is an unexpected versioning status. '
+        )
         self._client.put_bucket_versioning(
-            Bucket=self._name,
-            VersioningConfiguration={"Status": status})
+            Bucket=self._name, VersioningConfiguration={"Status": status}
+        )

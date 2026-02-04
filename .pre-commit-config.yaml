@@ -1,29 +1,29 @@
 repos:
+# Basic code quality and formatting checks
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: check-added-large-files
+    -   id: trailing-whitespace  # Remove trailing whitespace at end of lines
+    -   id: end-of-file-fixer  # Ensure files end with a newline
+    -   id: check-yaml  # Validate YAML file syntax
+    -   id: check-json  # Validate JSON file syntax
+    -   id: check-toml  # Validate TOML file syntax
+    -   id: check-added-large-files  # Prevent accidentally committing large files
+    -   id: check-ast  # Verify Python syntax by parsing to AST
+    -   id: detect-private-key  # Detect private keys to prevent credential leaks
+    -   id: check-merge-conflict  # Check for merge conflict markers
 
+# Python linting, formatting, and code quality
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.0
     hooks:
-    -   id: ruff
-        args: [ --fix ]
-    -   id: ruff-format
+    -   id: ruff  # Fast Python linter (replaces flake8, isort, etc.)
+        args: [ --fix, --select=F,E,W,D ]  # F=pyflakes, E=pycodestyle errors, W=warnings, D=pydocstyle (docstrings)
+    -   id: ruff-format  # Fast Python formatter (replaces black)
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.1
+# Python static type checking
+-   repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.408
     hooks:
-    -   id: mypy
-        additional_dependencies: [types-requests, boto3-stubs, types-boto3]
-        args: ["--ignore-missing-imports"]
-#     -   id: pytest
-#         name: pytest
-#         entry: pytest
-#         language: system
-#         types: [python]
-#         pass_filenames: false
-#         always_run: true
+    -   id: pyright  # Microsoft's static type checker for Python
+        additional_dependencies: [boto3-stubs, types-boto3, types-requests]  # Type stubs for better type checking

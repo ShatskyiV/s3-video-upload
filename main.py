@@ -34,7 +34,8 @@ def parse_args():
     parser.add_argument(
         "--bucket-name",
         required=True,
-        help="Target S3 bucket name. Must have at least 3 characters. May content . and -",
+        help="Target S3 bucket name. Must have at least 3 characters."
+        " May contain . and -",
     )
     # Optional arguments
     parser.add_argument("--prefix", default="", help="S3 key prefix")
@@ -65,7 +66,7 @@ def main():
     if args.lifecycle is not None and args.lifecycle <= 0:
         raise ValueError("lifecycle-days must be a positive integer")
 
-        dir_path = args.dir_path
+    dir_path = args.dir_path
     file_type = args.file_type
     bucket_name = args.bucket_name
     prefix = args.prefix
