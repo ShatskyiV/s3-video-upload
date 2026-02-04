@@ -1,0 +1,13 @@
+# CODEOWNERS - update the paths and owners to fit your org
+
+# Global owners
+* @ShatskyiV
+
+# Ownership by area
+/.github/ @your-org/devops-team
+/tools/ @your-org/automation-team
+/tests/ @your-org/qa-team
+/docs/ @your-org/docs-team
+
+# Example: specific file
+# /tools/xray/ @your-org/xray-maintainers
