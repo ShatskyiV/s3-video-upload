@@ -1,7 +1,7 @@
 # CODEOWNERS - update the paths and owners to fit your org
 
 # Global owners
-* @your-org/maintainers
+* @ShatskyiV
 
 # Ownership by area
 /.github/ @your-org/devops-team
