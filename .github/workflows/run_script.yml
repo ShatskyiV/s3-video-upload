@@ -22,6 +22,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Import test results to Xray
+        id: import_xray
         env:
           JIRA_URL: ${{ vars.JIRA_URL }}
           JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
@@ -50,15 +51,11 @@ jobs:
       - name: Add Xray execution link to job summary
         if: always()
         run: |
-          SUMMARY_FILE="$GITHUB_STEP_SUMMARY"
-          if [ -f xray_execution_info.json ]; then
-            EXECUTION_URL=$(python -c "import json,sys;print(json.load(open('xray_execution_info.json'))['execution_url'])")
-            EXECUTION_KEY=$(python -c "import json,sys;print(json.load(open('xray_execution_info.json'))['execution_key'])")
-            echo "## Xray Test Execution" >> "$SUMMARY_FILE"
-            echo "- Execution: [$EXECUTION_KEY]($EXECUTION_URL)" >> "$SUMMARY_FILE"
-            echo "[XRAY] Execution: $EXECUTION_KEY -> $EXECUTION_URL"
+          echo "## Xray Test Execution" >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "${{ steps.import_xray.outputs.execution_url }}" ]; then
+            echo "- Execution: [${{ steps.import_xray.outputs.execution_key }}](${{ steps.import_xray.outputs.execution_url }})" >> "$GITHUB_STEP_SUMMARY"
+            echo "[XRAY] Execution: ${{ steps.import_xray.outputs.execution_key }} -> ${{ steps.import_xray.outputs.execution_url }}"
           else
-            echo "## Xray Test Execution" >> "$SUMMARY_FILE"
-            echo "- No execution info available (xray_execution_info.json missing)." >> "$SUMMARY_FILE"
-            echo "[XRAY] xray_execution_info.json not found"
+            echo "- No execution info available." >> "$GITHUB_STEP_SUMMARY"
+            echo "[XRAY] No execution info available"
           fi

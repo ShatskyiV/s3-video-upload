@@ -752,6 +752,13 @@ def main() -> int:
         0,
     )
 
+    # Write outputs to GitHub Actions if running in CI
+    github_output = os.environ.get("GITHUB_OUTPUT")
+    if github_output:
+        with open(github_output, "a", encoding="utf-8") as f:
+            f.write(f"execution_url={info['execution_url']}\n")
+            f.write(f"execution_key={info['execution_key']}\n")
+
     print_header("SUCCESS")
     print(f"   Execution: {execution_key}")
     print(f"   URL: {info['execution_url']}")
