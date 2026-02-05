@@ -42,6 +42,7 @@ jobs:
           python tools/test_script.py \
             --junit-xml test_logs/junit-results.xml \
             --test-environment "${TEST_ENV}" \
-            --execution-summary "$EXECUTION_SUMMARY"
+            --execution-summary "$EXECUTION_SUMMARY" \
+            --execution-key "LC-TEST"
 
           echo "========== XRAY IMPORT COMPLETED =========="
