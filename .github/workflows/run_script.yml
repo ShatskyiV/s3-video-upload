@@ -23,7 +23,7 @@ jobs:
 
       - name: Import test results to Xray
         env:
-          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_URL: ${{ vars.JIRA_URL }}
           JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
           TEST_ENV: jira
         continue-on-error: true
