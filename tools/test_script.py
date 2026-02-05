@@ -174,7 +174,9 @@ class XrayClient:
 
         @return: Parsed JSON response.
         """
-        resp = self._session.get(f"{self.jira_url}{endpoint}", params=params, timeout=timeout)
+        resp = self._session.get(
+            f"{self.jira_url}{endpoint}", params=params, timeout=timeout
+        )
         resp.raise_for_status()
         return resp.json()
 
@@ -187,7 +189,9 @@ class XrayClient:
 
         @return: Parsed JSON response or empty dict.
         """
-        resp = self._session.post(f"{self.jira_url}{endpoint}", json=payload, timeout=timeout)
+        resp = self._session.post(
+            f"{self.jira_url}{endpoint}", json=payload, timeout=timeout
+        )
         resp.raise_for_status()
         return resp.json() if resp.content else {}
 
@@ -199,7 +203,9 @@ class XrayClient:
 
         @return: Issue dict if found, None otherwise.
         """
-        jql = f'project = {project_key} AND issuetype = "Test Set" AND summary ~ "{name}"'
+        jql = (
+            f'project = {project_key} AND issuetype = "Test Set" AND summary ~ "{name}"'
+        )
         data = self._get("/rest/api/2/search", {"jql": jql, "maxResults": 10})
 
         for issue in data.get("issues", []):
@@ -216,11 +222,15 @@ class XrayClient:
         """
         jql = f'issue in testSetTests("{test_set_key}")'
         data = self._get(
-            "/rest/api/2/search", {"jql": jql, "maxResults": 1000, "fields": "key"}, timeout=60
+            "/rest/api/2/search",
+            {"jql": jql, "maxResults": 1000, "fields": "key"},
+            timeout=60,
         )
         return [issue["key"] for issue in data.get("issues", [])]
 
-    def get_issues_bulk(self, issue_keys: List[str], batch_size: int = 100) -> List[dict]:
+    def get_issues_bulk(
+        self, issue_keys: List[str], batch_size: int = 100
+    ) -> List[dict]:
         """Get multiple issues in bulk using batched JQL queries.
 
         @param issue_keys: List of Jira issue keys to fetch.
@@ -243,7 +253,9 @@ class XrayClient:
             all_issues.extend(data.get("issues", []))
         return all_issues
 
-    def create_test_execution(self, project_key: str, summary: str, description: str = "") -> dict:
+    def create_test_execution(
+        self, project_key: str, summary: str, description: str = ""
+    ) -> dict:
         """Create a Test Execution issue.
 
         @param project_key: Jira project key.
@@ -270,7 +282,9 @@ class XrayClient:
         @param test_keys: List of test issue keys to add.
         """
         self._post(
-            f"/rest/raven/1.0/api/testexec/{execution_key}/test", {"add": test_keys}, timeout=60
+            f"/rest/raven/1.0/api/testexec/{execution_key}/test",
+            {"add": test_keys},
+            timeout=60,
         )
 
     def import_execution_results(self, execution_key: str, results: List[dict]):
@@ -346,7 +360,9 @@ class MappingCache:
 
         test_set = xray.find_test_set_by_name(project_key, test_set_name)
         if not test_set:
-            print(f"[ERROR] Test Set '{test_set_name}' not found in project {project_key}")
+            print(
+                f"[ERROR] Test Set '{test_set_name}' not found in project {project_key}"
+            )
             return {}
 
         test_set_key = test_set["key"]
@@ -423,12 +439,20 @@ class JUnitParser:
 
         if failure is not None:
             return TestResult(
-                clean_name, full_name, Status.FAIL, JUnitParser._extract_message(failure), duration
+                clean_name,
+                full_name,
+                Status.FAIL,
+                JUnitParser._extract_message(failure),
+                duration,
             )
 
         if error is not None:
             return TestResult(
-                clean_name, full_name, Status.FAIL, JUnitParser._extract_message(error), duration
+                clean_name,
+                full_name,
+                Status.FAIL,
+                JUnitParser._extract_message(error),
+                duration,
             )
 
         if skipped is not None:
@@ -437,7 +461,11 @@ class JUnitParser:
 
             if "xfail" in skip_type and "skip" not in skip_type:
                 return TestResult(
-                    clean_name, full_name, Status.CONDITIONALPASS, f"XFAIL: {skip_msg}", duration
+                    clean_name,
+                    full_name,
+                    Status.CONDITIONALPASS,
+                    f"XFAIL: {skip_msg}",
+                    duration,
                 )
 
             return TestResult(
@@ -490,7 +518,9 @@ class ResultAggregator:
                 continue
 
             if test.name not in aggregates:
-                aggregates[test.name] = AggregatedResult(test_key=self.mapping[test.name])
+                aggregates[test.name] = AggregatedResult(
+                    test_key=self.mapping[test.name]
+                )
 
             aggregates[test.name].add_variation(test)
 
@@ -507,7 +537,9 @@ class ReportGenerator:
     """Generates execution info and saves reports."""
 
     @staticmethod
-    def create_summary(env: Optional[str], version: Optional[str], custom: Optional[str]) -> str:
+    def create_summary(
+        env: Optional[str], version: Optional[str], custom: Optional[str]
+    ) -> str:
         """Create Test Execution summary.
 
         @param env: Test environment name.
@@ -606,8 +638,12 @@ def parse_args():
     parser.add_argument("--version", help="Software version")
     parser.add_argument("--execution-summary", help="Custom Test Execution summary")
     parser.add_argument("--execution-key", help="Existing Test Execution key")
-    parser.add_argument("--refresh-mapping", action="store_true", help="Force refresh mapping")
-    parser.add_argument("--dry-run", action="store_true", help="Parse without creating execution")
+    parser.add_argument(
+        "--refresh-mapping", action="store_true", help="Force refresh mapping"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Parse without creating execution"
+    )
     return parser.parse_args()
 
 
@@ -657,9 +693,7 @@ def main() -> int:
     print(f"Parsing: {args.junit_xml}")
 
     # results = JUnitParser.parse(args.junit_xml)
-    print(
-        "\n   Total: 1| Passed: 1 | Failed: 1 | Skipped: 1"
-    )
+    print("\n   Total: 1| Passed: 1 | Failed: 1 | Skipped: 1")
 
     # Step 3: Match and aggregate
     print_header("STEP 3: Match results to Xray tests")
