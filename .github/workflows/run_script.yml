@@ -28,8 +28,8 @@ jobs:
           TEST_ENV: qa1
         continue-on-error: true
         run: |
-          if [ ! -f "test_logs/junit-results.xml" ]; then
-            echo "[INFO] JUnit XML file not available: test_logs/junit-results.xml"
+          if [ ! -f "tools/junit-results.xml" ]; then
+            echo "[INFO] JUnit XML file not available: tools/junit-results.xml"
             echo "[INFO] Skipping Xray import - test results file not found"
             exit 0
           fi
