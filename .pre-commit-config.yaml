@@ -1,17 +1,27 @@
+# Pre-commit hooks for rs-automation framework
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
 repos:
 # Basic code quality and formatting checks
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
     -   id: trailing-whitespace  # Remove trailing whitespace at end of lines
+        args: [--markdown-linebreak-ext=md]
     -   id: end-of-file-fixer  # Ensure files end with a newline
     -   id: check-yaml  # Validate YAML file syntax
     -   id: check-json  # Validate JSON file syntax
     -   id: check-toml  # Validate TOML file syntax
     -   id: check-added-large-files  # Prevent accidentally committing large files
+        args: ['--maxkb=1000']
     -   id: check-ast  # Verify Python syntax by parsing to AST
     -   id: detect-private-key  # Detect private keys to prevent credential leaks
+    -   id: detect-aws-credentials  # Detect AWS credentials
+        args: ['--allow-missing-credentials']
     -   id: check-merge-conflict  # Check for merge conflict markers
+    -   id: check-case-conflict  # Check for case conflicts
+    -   id: check-symlinks  # Check symlinks
 
 # Python linting, formatting, and code quality
 -   repo: https://github.com/astral-sh/ruff-pre-commit
@@ -21,9 +31,36 @@ repos:
         args: [ --fix, --select=F,E,W,D ]  # F=pyflakes, E=pycodestyle errors, W=warnings, D=pydocstyle (docstrings)
     -   id: ruff-format  # Fast Python formatter (replaces black)
 
+# Security vulnerabilities check with bandit
+-   repo: https://github.com/PyCQA/bandit
+    rev: 1.7.7
+    hooks:
+    -   id: bandit  # Security scanner for Python code vulnerabilities
+        args: ['-ll', '-q', '-x', 'tests']
+        exclude: ^tests/
+
 # Python static type checking
 -   repo: https://github.com/RobertCraigie/pyright-python
     rev: v1.1.408
     hooks:
     -   id: pyright  # Microsoft's static type checker for Python
         additional_dependencies: [boto3-stubs, types-boto3, types-requests]  # Type stubs for better type checking
+
+# Configuration for all hooks
+default_language_version:
+  python: python3
+
+# Skip these files globally
+exclude: |
+  (?x)^(
+    \.git/|
+    \.venv/|
+    venv/|
+    __pycache__/|
+    \.pytest_cache/|
+    \.mypy_cache/|
+    build/|
+    dist/|
+    \.eggs/|
+    .*\.egg-info/
+  )

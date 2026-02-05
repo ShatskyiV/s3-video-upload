@@ -1,0 +1,47 @@
+name: Import test results to Xray
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  import_to_xray:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install requirements
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Import test results to Xray
+        env:
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
+          TEST_ENV: qa1
+        continue-on-error: true
+        run: |
+          if [ ! -f "test_logs/junit-results.xml" ]; then
+            echo "[INFO] JUnit XML file not available: test_logs/junit-results.xml"
+            echo "[INFO] Skipping Xray import - test results file not found"
+            exit 0
+          fi
+
+          echo "========== IMPORTING RESULTS TO XRAY =========="
+
+          # Use the workflow run id as execution summary
+          EXECUTION_SUMMARY="${{ github.run_id }} - TEST EXECUTION"
+
+          python tools/test_script.py \
+            --junit-xml test_logs/junit-results.xml \
+            --test-environment "${TEST_ENV}" \
+            --execution-summary "$EXECUTION_SUMMARY"
+
+          echo "========== XRAY IMPORT COMPLETED =========="
