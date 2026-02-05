@@ -25,7 +25,7 @@ jobs:
         env:
           JIRA_URL: ${{ secrets.JIRA_URL }}
           JIRA_TOKEN: ${{ secrets.JIRA_TOKEN }}
-          TEST_ENV: qa1
+          TEST_ENV: jira
         continue-on-error: true
         run: |
           if [ ! -f "tools/junit-results.xml" ]; then
